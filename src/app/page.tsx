@@ -1,6 +1,37 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Divider,
+  Grid,
+  Alert,
+  CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Card,
+  CardContent,
+  CardActions,
+  Chip,
+  useTheme
+} from '@mui/material';
+import {
+  UploadFile,
+  Code,
+  ExpandMore,
+  Download,
+  FilePresent
+} from '@mui/icons-material';
 
 export default function Home() {
   const [yamlInput, setYamlInput] = useState('');
@@ -11,6 +42,7 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const theme = useTheme();
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -97,78 +129,200 @@ export default function Home() {
   };
 
   return (
-      <main>
-        <h1>Schema Merger</h1>
-        <div>
-          <label>Input Schema (YAML)</label>
-          <div>
-            <input
-                type="file"
-                ref={fileInputRef}
-                accept=".yaml,.yml"
-                onChange={handleFileUpload}
-            />
-            <div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+            Schema Merger
+          </Typography>
+
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" component="h2" gutterBottom>
+              Input Schema
+            </Typography>
+
+            {/* File Upload Section */}
+            <Paper
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  mb: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  border: '1px dashed',
+                  borderColor: 'divider',
+                  backgroundColor: 'background.default'
+                }}
+            >
+              <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".yaml,.yml"
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+              />
+              <Button
+                  variant="contained"
+                  startIcon={<UploadFile />}
+                  onClick={() => fileInputRef.current?.click()}
+                  sx={{ mb: 1 }}
+              >
+                Upload YAML File
+              </Button>
+
               {uploadedFileName ? (
-                  <span>Selected: {uploadedFileName}</span>
+                  <Chip
+                      icon={<FilePresent />}
+                      label={uploadedFileName}
+                      color="success"
+                      variant="outlined"
+                  />
               ) : (
-                  <span>No file selected (.yaml or .yml)</span>
+                  <Typography variant="body2" color="text.secondary">
+                    No file selected (.yaml or .yml)
+                  </Typography>
               )}
-            </div>
-          </div>
-          {/* Keep textarea as fallback */}
-          <div
-          >
-            <div>
-              <span>Or paste YAML content directly:</span>
-            </div>
-            <textarea
+            </Paper>
+
+            {/* Text Input Area */}
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Or paste YAML content directly:
+            </Typography>
+            <TextField
+                multiline
+                fullWidth
                 rows={6}
                 value={yamlInput}
                 onChange={(e) => setYamlInput(e.target.value)}
                 placeholder="Paste your schema here..."
+                variant="outlined"
             />
-          </div>
-        </div>
-        <button
-            onClick={handleProcess}
-            disabled={loading || !yamlInput.trim()}
-        >
-          {loading ? 'Processing...' : 'Process'}
-        </button>
-        {error && <p>Error: {error}</p>}
-        <div>
-          {selectedFileContent && (
-            <div>
-              <div >
-                <h2>File Content: {selectedFile}</h2>
-                <button
-                    onClick={downloadFile}
-                >
-                  Download {selectedFile}
-                </button>
-              </div>
-              <pre>
-                  {selectedFileContent}
-                </pre>
-            </div>
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+                variant="contained"
+                color="primary"
+                disabled={loading || !yamlInput.trim()}
+                onClick={handleProcess}
+                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Code />}
+            >
+              {loading ? 'Processing...' : 'Process Schema'}
+            </Button>
+          </Box>
+        </Paper>
+
+        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+        {/* Results Section */}
+        {(selectedFileContent || fileList.length > 0) && (
+            <Grid container spacing={3}>
+              {/* Content Preview Section */}
+              <Grid item xs={12} md={8}>
+                {selectedFileContent && (
+                    <Card>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                          <Typography variant="h6" component="div">
+                            File: {selectedFile}
+                          </Typography>
+                          <Button
+                              variant="outlined"
+                              startIcon={<Download />}
+                              onClick={downloadFile}
+                              size="small"
+                          >
+                            Download
+                          </Button>
+                        </Box>
+                        <Paper
+                            variant="outlined"
+                            sx={{
+                              p: 2,
+                              maxHeight: 400,
+                              overflow: 'auto',
+                              backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f5f5f5',
+                              fontFamily: 'monospace'
+                            }}
+                        >
+                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                      {selectedFileContent}
+                    </pre>
+                        </Paper>
+                      </CardContent>
+                      <CardActions>
+                        <Button
+                            variant="contained"
+                            startIcon={<Download />}
+                            onClick={downloadFile}
+                            fullWidth
+                        >
+                          Download {selectedFile}
+                        </Button>
+                      </CardActions>
+                    </Card>
+                )}
+              </Grid>
+
+              {/* File List Section */}
+              <Grid item xs={12} md={4}>
+                {fileList.length > 0 && (
+                    <Accordion defaultExpanded>
+                      <AccordionSummary expandIcon={<ExpandMore />}>
+                        <Typography variant="h6">
+                          Generated Files ({fileList.length})
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <List
+                            sx={{
+                              maxHeight: 400,
+                              overflow: 'auto',
+                              bgcolor: 'background.paper',
+                              border: 1,
+                              borderColor: 'divider',
+                              borderRadius: 1
+                            }}
+                        >
+                          {fileList.map((file, index) => (
+                              <>
+                                {index > 0 && <Divider />}
+                                <ListItem disablePadding>
+                                  <ListItemButton
+                                      selected={selectedFile === file}
+                                      onClick={() => fetchFile(file)}
+                                      sx={{
+                                        py: 1.5,
+                                        '&.Mui-selected': {
+                                          bgcolor: 'primary.light',
+                                          '&:hover': {
+                                            bgcolor: 'primary.light',
+                                          },
+                                        },
+                                      }}
+                                  >
+                                    <ListItemText
+                                        primary={file}
+                                        primaryTypographyProps={{
+                                          sx: {
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            fontWeight: selectedFile === file ? 'medium' : 'normal'
+                                          }
+                                        }}
+                                    />
+                                  </ListItemButton>
+                                </ListItem>
+                              </>
+                          ))}
+                        </List>
+                      </AccordionDetails>
+                    </Accordion>
+                )}
+              </Grid>
+            </Grid>
         )}
-          {fileList.length > 0 && (
-              <div>
-                <h2>Generated Files:</h2>
-                <div>
-                  {fileList.map((file) => (
-                      <button
-                          key={file}
-                          onClick={() => fetchFile(file)}
-                      >
-                        {file}
-                      </button>
-                  ))}
-                </div>
-              </div>
-          )}
-        </div>
-      </main>
+      </Container>
   );
 }
