@@ -1,18 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function Home() {
   const [yamlInput, setYamlInput] = useState('');
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [fileList, setFileList] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<string>('');
   const [selectedFileContent, setSelectedFileContent] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file extension
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    if (fileExt !== 'yaml' && fileExt !== 'yml') {
+      setError('Please upload a valid YAML file (.yaml or .yml)');
+      return;
+    }
+
+    setUploadedFileName(file.name);
+    setError(null);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setYamlInput(event.target?.result as string);
+    };
+    reader.readAsText(file);
+  };
 
   const handleProcess = async () => {
     setLoading(true);
     setError('');
     setSelectedFileContent('');
+    setSelectedFile('');
     try {
       const res = await fetch('/api/process', {
         method: 'POST',
@@ -21,7 +46,10 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unexpected error');
-      setFileList(data.files);
+
+      // Sort files alphabetically
+      const sortedFiles = [...data.files].sort((a, b) => a.localeCompare(b));
+      setFileList(sortedFiles);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -32,6 +60,7 @@ export default function Home() {
   const fetchFile = async (filename: string) => {
     try {
       setLoading(true);
+      setSelectedFile(filename);
       const res = await fetch(`/api/schema/${filename}`);
 
       if (!res.ok) {
@@ -39,7 +68,6 @@ export default function Home() {
       }
 
       const data = await res.json();
-      console.log("API Response:", data); // Debug response
 
       if (data.content) {
         setSelectedFileContent(data.content);
@@ -54,55 +82,93 @@ export default function Home() {
     }
   };
 
+  const downloadFile = () => {
+    if (!selectedFileContent || !selectedFile) return;
+
+    const blob = new Blob([selectedFileContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = selectedFile;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
-      <main className="p-6 max-w-3xl mx-auto bg-white rounded-md shadow">
-        <h1 className="text-2xl font-bold mb-4">Schema Merger</h1>
-
-        <div className="mb-4">
-          <label htmlFor="yaml" className="block font-medium mb-1">Input Schema (YAML)</label>
-          <textarea
-              id="yaml"
-              rows={6}
-              className="w-full border p-2 rounded"
-              value={yamlInput}
-              onChange={(e) => setYamlInput(e.target.value)}
-              placeholder="Paste your schema here..."
-          />
+      <main>
+        <h1>Schema Merger</h1>
+        <div>
+          <label>Input Schema (YAML)</label>
+          <div>
+            <input
+                type="file"
+                ref={fileInputRef}
+                accept=".yaml,.yml"
+                onChange={handleFileUpload}
+            />
+            <div>
+              {uploadedFileName ? (
+                  <span>Selected: {uploadedFileName}</span>
+              ) : (
+                  <span>No file selected (.yaml or .yml)</span>
+              )}
+            </div>
+          </div>
+          {/* Keep textarea as fallback */}
+          <div
+          >
+            <div>
+              <span>Or paste YAML content directly:</span>
+            </div>
+            <textarea
+                rows={6}
+                value={yamlInput}
+                onChange={(e) => setYamlInput(e.target.value)}
+                placeholder="Paste your schema here..."
+            />
+          </div>
         </div>
-
         <button
             onClick={handleProcess}
-            disabled={loading}
-            className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
+            disabled={loading || !yamlInput.trim()}
         >
           {loading ? 'Processing...' : 'Process'}
         </button>
-
-        {error && <p className="text-red-600 mt-4">Error: {error}</p>}
-
-        {fileList.length > 0 && (
-            <div className="mt-6">
-              <h2 className="font-semibold mb-2">Generated Files:</h2>
-              <ul className="list-disc list-inside">
-                {fileList.map((file) => (
-                    <li key={file}>
-                      <button className="text-blue-600 hover:underline" onClick={() => fetchFile(file)}>
+        {error && <p>Error: {error}</p>}
+        <div>
+          {selectedFileContent && (
+            <div>
+              <div >
+                <h2>File Content: {selectedFile}</h2>
+                <button
+                    onClick={downloadFile}
+                >
+                  Download {selectedFile}
+                </button>
+              </div>
+              <pre>
+                  {selectedFileContent}
+                </pre>
+            </div>
+        )}
+          {fileList.length > 0 && (
+              <div>
+                <h2>Generated Files:</h2>
+                <div>
+                  {fileList.map((file) => (
+                      <button
+                          key={file}
+                          onClick={() => fetchFile(file)}
+                      >
                         {file}
                       </button>
-                    </li>
-                ))}
-              </ul>
-            </div>
-        )}
-
-        {selectedFileContent && (
-            <div className="mt-6">
-              <h2 className="font-semibold mb-2">File Content:</h2>
-              <pre className="whitespace-pre-wrap bg-gray-100 p-4 rounded max-h-96 overflow-auto">
-                {selectedFileContent}
-              </pre>
-            </div>
-        )}
+                  ))}
+                </div>
+              </div>
+          )}
+        </div>
       </main>
   );
 }
