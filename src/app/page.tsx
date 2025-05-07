@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
+import Grid from '@mui/material/Grid';
 import {
   Container,
   Typography,
@@ -13,7 +14,6 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
-  Grid,
   Alert,
   CircularProgress,
   Accordion,
@@ -131,8 +131,8 @@ export default function Home() {
   return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-            Schema Merger
+          <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold', textAlign: 'center' }}>
+            Schema Merger | Schema Splitter
           </Typography>
 
           <Box sx={{ mb: 3 }}>
@@ -217,54 +217,6 @@ export default function Home() {
         {/* Results Section */}
         {(selectedFileContent || fileList.length > 0) && (
             <Grid container spacing={3}>
-              {/* Content Preview Section */}
-              <Grid item xs={12} md={8}>
-                {selectedFileContent && (
-                    <Card>
-                      <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                          <Typography variant="h6" component="div">
-                            File: {selectedFile}
-                          </Typography>
-                          <Button
-                              variant="outlined"
-                              startIcon={<Download />}
-                              onClick={downloadFile}
-                              size="small"
-                          >
-                            Download
-                          </Button>
-                        </Box>
-                        <Paper
-                            variant="outlined"
-                            sx={{
-                              p: 2,
-                              maxHeight: 400,
-                              overflow: 'auto',
-                              backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f5f5f5',
-                              fontFamily: 'monospace'
-                            }}
-                        >
-                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                      {selectedFileContent}
-                    </pre>
-                        </Paper>
-                      </CardContent>
-                      <CardActions>
-                        <Button
-                            variant="contained"
-                            startIcon={<Download />}
-                            onClick={downloadFile}
-                            fullWidth
-                        >
-                          Download {selectedFile}
-                        </Button>
-                      </CardActions>
-                    </Card>
-                )}
-              </Grid>
-
-              {/* File List Section */}
               <Grid item xs={12} md={4}>
                 {fileList.length > 0 && (
                     <Accordion defaultExpanded>
@@ -285,7 +237,7 @@ export default function Home() {
                             }}
                         >
                           {fileList.map((file, index) => (
-                              <>
+                              <React.Fragment key={file}>
                                 {index > 0 && <Divider />}
                                 <ListItem disablePadding>
                                   <ListItemButton
@@ -314,11 +266,60 @@ export default function Home() {
                                     />
                                   </ListItemButton>
                                 </ListItem>
-                              </>
+                              </React.Fragment>
                           ))}
                         </List>
                       </AccordionDetails>
                     </Accordion>
+                )}
+              </Grid>
+              <Grid item xs={12} md={8}>
+                {selectedFileContent && (
+                    <Card>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                          <Typography variant="h6" component="div">
+                            File: {selectedFile}
+                          </Typography>
+                          <Button
+                              variant="outlined"
+                              startIcon={<Download />}
+                              onClick={downloadFile}
+                              size="small"
+                          >
+                            Download
+                          </Button>
+                        </Box>
+                        <Paper
+                            variant="outlined"
+                            sx={{
+                              p: 2,
+                              maxHeight: 400,
+                              overflow: 'auto',
+                              backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f5f5f5',
+                              fontFamily: 'monospace'
+                            }}
+                        >
+                          <pre style={{
+                            margin: 0,
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'normal'
+                          }}>
+                            {selectedFileContent}
+                          </pre>
+                        </Paper>
+                      </CardContent>
+                      <CardActions>
+                        <Button
+                            variant="contained"
+                            startIcon={<Download />}
+                            onClick={downloadFile}
+                            fullWidth
+                        >
+                          Download {selectedFile}
+                        </Button>
+                      </CardActions>
+                    </Card>
                 )}
               </Grid>
             </Grid>
