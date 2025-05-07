@@ -131,7 +131,7 @@ export default function Home() {
   return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold', textAlign: 'center' }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'secondary.dark', fontWeight: 'bold', textAlign: 'center' }}>
             Schema Merger | Schema Splitter
           </Typography>
 
