@@ -3,7 +3,6 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import Grid from '@mui/material/Grid';
 import {
   Container,
   Typography,
@@ -25,7 +24,8 @@ import {
   CardContent,
   CardActions,
   Chip,
-  useTheme
+  useTheme,
+  Grid,
 } from '@mui/material';
 import {
   UploadFile,
@@ -133,7 +133,7 @@ export default function Home() {
   return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'secondary.dark', fontWeight: 'bold', textAlign: 'center' }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'grey.700', fontWeight: 'bold', textAlign: 'center' }}>
             Schema Merger | Schema Splitter
           </Typography>
 
@@ -165,9 +165,10 @@ export default function Home() {
               />
               <Button
                   variant="contained"
+                  color="primary"
                   startIcon={<UploadFile />}
                   onClick={() => fileInputRef.current?.click()}
-                  sx={{ mb: 1 }}
+                  sx={{ mb: 1}}
               >
                 Upload YAML File
               </Button>
@@ -248,9 +249,9 @@ export default function Home() {
                                       sx={{
                                         py: 1.5,
                                         '&.Mui-selected': {
-                                          bgcolor: 'primary.light',
+                                          bgcolor: 'grey.400',
                                           '&:hover': {
-                                            bgcolor: 'primary.light',
+                                            bgcolor: 'grey.500',
                                           },
                                         },
                                       }}
@@ -314,6 +315,7 @@ export default function Home() {
                       <CardActions>
                         <Button
                             variant="contained"
+                            color="secondary"
                             startIcon={<Download />}
                             onClick={downloadFile}
                             fullWidth
