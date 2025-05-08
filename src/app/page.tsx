@@ -25,8 +25,8 @@ import {
   CardActions,
   Chip,
   useTheme,
-  Grid,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   UploadFile,
   Code,
@@ -220,7 +220,7 @@ export default function Home() {
         {/* Results Section */}
         {(selectedFileContent || fileList.length > 0) && (
             <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 {fileList.length > 0 && (
                     <Accordion defaultExpanded>
                       <AccordionSummary expandIcon={<ExpandMore />}>
@@ -276,7 +276,7 @@ export default function Home() {
                     </Accordion>
                 )}
               </Grid>
-              <Grid item xs={12} md={8}>
+              <Grid size={{ xs: 12, md: 8 }}>
                 {selectedFileContent && (
                     <Card>
                       <CardContent>
