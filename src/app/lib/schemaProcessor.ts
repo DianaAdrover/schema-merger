@@ -1,4 +1,4 @@
-// src/lib/schemaProcessor.ts
+// src/app/lib/schemaProcessor.ts
 import {JsonSchema, merge} from 'allof-merge';
 import yaml from 'js-yaml';
 import RefParser from '@apidevtools/json-schema-ref-parser';

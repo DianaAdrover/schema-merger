@@ -1,3 +1,4 @@
+// src/app/api/process/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { processSchema } from '@/app/lib/schemaProcessor';
 
@@ -11,4 +12,3 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: message }, { status: 500 });
     }
 }
-
