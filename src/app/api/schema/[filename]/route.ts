@@ -4,15 +4,15 @@ import path from 'path';
 
 export async function GET(
     request: NextRequest,
-    context: { params: Promise<{ filename: string }> }
+    { params }: { params: { filename: string } }
 ) {
-    // Await the params object before using it
-    const params = await context.params;
-    const filePath = path.join(process.cwd(), 'public', 'schemas', params.filename);
-
     try {
+        // Safely access the filename parameter
+        const filename = params.filename;
+        const filePath = path.join(process.cwd(), 'public', 'schemas', filename);
+
         const content = await fs.readFile(filePath, 'utf-8');
-        console.log(`Reading file: ${params.filename}, content length: ${content.length}`);
+        console.log(`Reading file: ${filename}, content length: ${content.length}`);
         return NextResponse.json({ content });
     } catch (error) {
         console.error(`File read error: ${error}`);
