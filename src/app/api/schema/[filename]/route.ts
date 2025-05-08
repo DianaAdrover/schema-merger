@@ -4,7 +4,7 @@ import path from 'path';
 
 export async function GET(
     request: NextRequest,
-    context: { params: { filename: string } }
+    context: { params: Promise<{ filename: string }> }
 ) {
     // Await the params object before using it
     const params = await context.params;
@@ -12,7 +12,6 @@ export async function GET(
 
     try {
         const content = await fs.readFile(filePath, 'utf-8');
-        // Debug what we're sending back
         console.log(`Reading file: ${params.filename}, content length: ${content.length}`);
         return NextResponse.json({ content });
     } catch (error) {
