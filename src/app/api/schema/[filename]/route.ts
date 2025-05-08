@@ -4,13 +4,15 @@ import path from 'path';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { filename: string } }
+    context: { params: Record<string, string> }
 ) {
     try {
-        const filePath = path.join(process.cwd(), 'public', 'schemas', params.filename);
+        const { filename } = context.params;
+        const filePath = path.join(process.cwd(), 'public', 'schemas', filename);
         const content = await fs.readFile(filePath, 'utf-8');
         return NextResponse.json({ content });
     } catch (error) {
-        return NextResponse.json({ error: 'File not found ' + error}, { status: 404 });
+        return NextResponse.json({ error: 'File not found - ' + error }, { status: 404 });
     }
 }
+
