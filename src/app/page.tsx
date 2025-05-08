@@ -44,6 +44,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const theme = useTheme();
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,7 +82,7 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unexpected error');
 
-      // Sort files alphabetically
+      setSessionId(data.id); // ✅ Store session ID
       const sortedFiles = [...data.files].sort((a, b) => a.localeCompare(b));
       setFileList(sortedFiles);
     } catch (err) {
@@ -91,17 +93,19 @@ export default function Home() {
   };
 
   const fetchFile = async (filename: string) => {
+    if (!sessionId) {
+      setError('Session ID is missing. Please process a file first.');
+      return;
+    }
+
     try {
       setLoading(true);
       setSelectedFile(filename);
-      const res = await fetch(`/api/schema/${filename}`);
 
-      if (!res.ok) {
-        throw new Error(`Failed to fetch: ${res.status}`);
-      }
+      const res = await fetch(`/api/schema/${sessionId}/${filename}`);
+      if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 
       const data = await res.json();
-
       if (data.content) {
         setSelectedFileContent(data.content);
       } else {
@@ -118,16 +122,25 @@ export default function Home() {
   const downloadFile = () => {
     if (!selectedFileContent || !selectedFile) return;
 
-    const blob = new Blob([selectedFileContent], { type: 'text/plain' });
+    const blob = new Blob([selectedFileContent], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement('a');
     a.href = url;
-    a.download = selectedFile;
+
+    // Force .json extension
+    const filenameWithJson = selectedFile.endsWith('.json')
+        ? selectedFile
+        : `${selectedFile}.json`;
+
+    a.download = filenameWithJson;
+
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
 
   return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
