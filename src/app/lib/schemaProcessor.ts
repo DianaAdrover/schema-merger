@@ -16,12 +16,20 @@ export async function processSchema(yamlInput: string): Promise<{ names: string[
     const components = mergedSchema.components?.schemas || {};
     const result: Record<string, object> = {};
 
+    function splitPascalCase(text: string): string {
+        return text
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+            .trim();
+    }
+
     for (const [name, schema] of Object.entries(components)) {
         result[name] = {
             $schema: "http://json-schema.org/draft-04/schema#",
-            id: `http://finxact.com/product/schemas/${name}.json`,
+            id: `${name}.json`,
             title: name,
             description: (schema as JsonSchema).description || `Schema for ${name}`,
+            example: (schema as JsonSchema).example || splitPascalCase(name),
             type: (schema as JsonSchema).type || "object",
             properties: (schema as JsonSchema).properties || {},
             required: (schema as JsonSchema).required || [],
